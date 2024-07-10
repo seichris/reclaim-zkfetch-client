@@ -6,7 +6,7 @@ This is a React starter for using zkFetch SDK
 
 ```bash
 npm install
-npm start
+npm run start
 ```
 
 
