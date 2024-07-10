@@ -18,43 +18,11 @@ function App() {
     setIsFetching(true);
 
     try {
-      // graphql query to fetch sports data from shuffle.com (replace with your own query and url)
-      const query = `
-      query GetSports($language: Language) {
-        sports {
-          sports
-          name
-          nameTranslation: name(language: $language)
-          weight
-          __typename
-        }
-      }
-    `;
-
-    // Set query variables
-    const variables = {
-      language: "en",
-    };
-
-    // Set options for the fetch request
-    const publicOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        operationName: "GetSports",
-        variables: variables,
-        query: query,
-      }),
-    };
-
-
-      // replace with your url to fetch data from (in this case, we are fetching sports data from shuffle.com)
-      const url = "https://shuffle.com/graphql-sports";
+      // replace with your url to fetch data from (in this case, we are fetching Crypto Global Market Data from coingecko)
+      const url = "https://api.coingecko.com/api/v3/global";
       // you can add retry options to the fetch request (optional) (eg. retry 5 times with a delay of 1500ms between each retry)
       // ie const data = await reclaim.zkFetch(url, publicOptions, {}, 5, 1500);
-      const data = await reclaim.zkFetch(url, publicOptions);
+      const data = await reclaim.zkFetch(url);
       console.log(data);
       setProofData(data);
       setIsFetching(false);
