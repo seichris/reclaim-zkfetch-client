@@ -12,7 +12,7 @@ npm run start
 
 ## Pre-requisites
 
-An application ID and secret from Reclaim Protocol. You can get one from the  Reclaim Developer Protocol [dashboard](https://dev.reclaimprotocol.org/).
+An application ID and secret from Reclaim Protocol. You can get one from the [devtool dashboard](https://dev.reclaimprotocol.org/).
 
 Although we have a test id and secret in the code, it is recommended to use your own key for production.
 

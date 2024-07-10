@@ -18,7 +18,7 @@ function App() {
     setIsFetching(true);
 
     try {
-      // options for the fetch request (optional but recommended to include headers) 
+      // graphql query to fetch sports data from shuffle.com (replace with your own query and url)
       const query = `
       query GetSports($language: Language) {
         sports {
