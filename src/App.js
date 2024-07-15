@@ -20,9 +20,10 @@ function App() {
     try {
       // replace with your url to fetch data from (in this case, we are fetching Crypto Global Market Data from coingecko)
       const url = "https://api.coingecko.com/api/v3/global";
-      // you can add retry options to the fetch request (optional) (eg. retry 5 times with a delay of 1500ms between each retry)
-      // ie const data = await reclaim.zkFetch(url, publicOptions, {}, 5, 1500);
-      const data = await reclaim.zkFetch(url);
+      const publicOptions = {
+        method: "GET",
+      }
+      const data = await reclaim.zkFetch(url, publicOptions);
       console.log(data);
       setProofData(data);
       setIsFetching(false);
