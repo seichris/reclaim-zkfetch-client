@@ -2,6 +2,10 @@ const webpack = require("webpack");
 
 module.exports = function override(config) {
   const fallback = config.resolve.fallback || {};
+  const alias = {
+    koffi: false,
+  }
+  config.resolve.alias = alias;
   Object.assign(fallback, {
     crypto: require.resolve("crypto-browserify"),
     stream: require.resolve("stream-browserify"),
@@ -16,6 +20,7 @@ module.exports = function override(config) {
     fs: false,
     net: false,
     tls: false,
+    koffi: false,
     child_process: false,
     "react-native-tcp-socket": false,
     process: require.resolve("process/browser.js"), // Explicitly add .js extension
@@ -27,6 +32,7 @@ module.exports = function override(config) {
       Buffer: ["buffer", "Buffer"],
     }),
   ]);
+
 
   config.module.rules.push({
     test: /\.js$/,

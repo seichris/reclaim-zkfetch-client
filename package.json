@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@reclaimprotocol/js-sdk": "1.3.6",
-    "@reclaimprotocol/zk-fetch": "0.1.2",
+    "@reclaimprotocol/zk-fetch": "git+https://gitlab.reclaimprotocol.org/integrations/offchain/zk-fetch#c1d7811362057e2901a5ea903695238facfeba72",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -14,6 +14,7 @@
     "child_process": "^1.0.2",
     "crypto-browserify": "^3.12.0",
     "dotenv": "^16.4.5",
+    "ethers": "^6.13.1",
     "http_request": "latest",
     "jsdom": "latest",
     "json-edit-react": "^1.13.2",
@@ -44,11 +45,10 @@
     "url": "^0.11.0"
   },
   "overrides": {
-    "@reclaimprotocol/circom-symmetric-crypto": "git+https://gitlab.reclaimprotocol.org/reclaim/zk-symmetric-crypto#d396578f6fca1c63f97503b8ccb207b077dac64a"
+    "koffi": false
   },
-
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false && react-app-rewired start",
+    "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject"
@@ -73,6 +73,7 @@
   },
   "browser": {
     "fs": false,
-    "child_process": false
+    "child_process": false,
+    "koffi": false
   }
 }
