@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@reclaimprotocol/js-sdk": "1.3.6",
-    "@reclaimprotocol/zk-fetch": "git+https://gitlab.reclaimprotocol.org/integrations/offchain/zk-fetch#c1d7811362057e2901a5ea903695238facfeba72",
+    "@reclaimprotocol/js-sdk": "1.3.10",
+    "@reclaimprotocol/zk-fetch": "0.1.3",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",

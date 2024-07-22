@@ -3,7 +3,6 @@ import "./App.css";
 import { useState } from "react";
 import { JsonEditor } from "json-edit-react";
 import { Toaster, toast } from "react-hot-toast";
-import { Reclaim } from "@reclaimprotocol/js-sdk";
 
 function App() {
   const [proofData, setProofData] = useState(null);
@@ -31,24 +30,6 @@ function App() {
     } catch (error) {
       setIsFetching(false);
       toast.error(`${error?.message}`);
-      console.error(error);
-    }
-  };
-
-  /* 
-  This function verifies the proof using the Reclaim SDK (offchain method)
-  https://docs.reclaimprotocol.org/sdk-methods#verifysignedproofproof--promiseboolean
-  */
-  const verifyProof = async (proof) => {
-    try {
-      const isValid = await Reclaim.verifySignedProof(proof);
-      if (isValid) {
-        toast.success("Proof is valid");
-      } else {
-        toast.error("Proof is invalid");
-      }
-    } catch (error) {
-      toast.error(`${error}`);
       console.error(error);
     }
   };
@@ -82,16 +63,6 @@ function App() {
           >
             {isFetching ? "Fetching..." : "Generate Proof"}
           </button>
-
-          {proofData && !isFetching && (
-            <button
-              className="bg-green-800 mt-8 hover:bg-green-700 lg:text-lg md:text-base sm:text-lg text-gray-200 font-semibold py-2 px-4 rounded"
-              onClick={() => verifyProof(proofData)}
-            >
-              {" "}
-              Verify Proof
-            </button>
-          )}
           {proofData && !isFetching && (
             <>
               <h3 className="text-slate-300 text-sm lg:text-2xl md:text-xl sm:text-lg xs:text-xs mt-8 text-white ">
