@@ -4,15 +4,17 @@ import { useState } from "react";
 import { JsonEditor } from "json-edit-react";
 import { Toaster, toast } from "react-hot-toast";
 
+// replace with your own appID and appSecret from https://dev.reclaimprotocol.org/
+const reclaim = new ReclaimClient(
+  process.env.REACT_APP_RECLAIM_APP_ID,
+  process.env.REACT_APP_RECLAIM_APP_SECRET,
+  true
+);
+
 function App() {
   const [proofData, setProofData] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
 
-  // replace with your own appID and appSecret from https://dev.reclaimprotocol.org/
-  const reclaim = new ReclaimClient(
-    process.env.REACT_APP_RECLAIM_APP_ID,
-    process.env.REACT_APP_RECLAIM_APP_SECRET,
-  );
   const generateProof = async () => {
     setIsFetching(true);
 
@@ -23,10 +25,10 @@ function App() {
         // public options for the fetch request 
         method: "GET",
       }, {
-         /* 
-            * The proof will match the response body with the regex pattern (search for the number of active cryptocurrencies in the response body)
-            the regex will capture the number in the named group 'active_cryptocurrencies'. 
-            */ 
+        /* 
+          * The proof will match the response body with the regex pattern (search for the number of active cryptocurrencies in the response body)
+          the regex will capture the number in the named group 'active_cryptocurrencies'. 
+        */ 
         responseMatches: [
           {
             type: "regex",
@@ -37,7 +39,6 @@ function App() {
         responseRedactions: [{
           regex: 'active_cryptocurrencies":(?<active_cryptocurrencies>[\\d\\.]+)'
         }]
-       
       });
       console.log(data);
       setProofData(data);
@@ -53,41 +54,57 @@ function App() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <main className="flex min-h-screen flex-col items-center justify-between p-8 pt-12 gap-4 bg-black">
-        <div className="z-10 w-full flex flex-col gap-4 items-center justify-center font-mono text-sm">
-          <h2 className="text-slate-300 text-sm lg:text-4xl md:text-3xl sm:text-xl xs:text-xs text-nowrap">
-            Welcome to Reclaim Protocol (zkFetch)
-          </h2>
-          <h4 className="text-slate-400 text-sm lg:text-xl md:text-lg sm:text-lg xs:text-xs">
+      <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-b from-gray-900 to-black">
+        <div className="w-full max-w-4xl flex flex-col gap-8 items-center justify-center font-sans">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center">
+            zkFetch Demo
+          </h1>
+          <h2 className="text-md md:text-lg text-slate-300 text-center max-w-2xl">
             This demo uses{" "}
-            <span className="text-slate-300 underline">
-              <a
-                href="https://www.npmjs.com/package/@reclaimprotocol/zk-fetch"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {" "}
-                @reclaimprotocol/zk-fetch{" "}
-              </a>
-            </span>{" "}
-            to fetch data{" "}
-          </h4>
+            <a
+              href="https://www.npmjs.com/package/@reclaimprotocol/zk-fetch"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-400 font-semibold hover:underline transition-colors duration-300"
+            >
+              @reclaimprotocol/zk-fetch
+            </a>{" "}
+            to fetch data from{" "}
+            <a 
+              href="https://api.coingecko.com/api/v3/global" 
+              target="_blank" 
+              rel="noreferrer"
+              className="text-green-400 font-semibold hover:underline transition-colors duration-300"
+            >
+              CoinGecko API
+            </a>{" "}
+            and generate a proof
+          </h2>
 
           <button
-            className="bg-blue-500 mt-8 hover:bg-blue-700 lg:text-lg md:text-base sm:text-lg text-gray-200 font-semibold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             onClick={generateProof}
           >
-            {isFetching ? "Fetching..." : "Generate Proof"}
+            {isFetching ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Fetching...
+              </span>
+            ) : (
+              "Generate Proof"
+            )}
           </button>
+          
           {proofData && !isFetching && (
-            <>
-              <h3 className="text-slate-300 text-sm lg:text-2xl md:text-xl sm:text-lg xs:text-xs mt-8 text-white ">
+            <div className="w-full bg-gray-800 rounded-lg shadow-xl p-6 mt-8">
+              <h3 className="text-2xl font-bold text-white mb-4">
                 Proof Received
               </h3>
-
               <JsonEditor
                 rootName="proof"
-                className="p-4"
                 data={proofData}
                 viewOnly={true}
                 restrictEdit={true}
@@ -98,7 +115,7 @@ function App() {
                 maxWidth={"100%"}
                 minWidth={"100%"}
               />
-            </>
+            </div>
           )}
         </div>
       </main>
