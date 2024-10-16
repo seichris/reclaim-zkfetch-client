@@ -10,8 +10,8 @@ function App() {
 
   // replace with your own appID and appSecret from https://dev.reclaimprotocol.org/
   const reclaim = new ReclaimClient(
-    "0xF218B59D7794e32693f5D3236e011C233E249105",
-    "0xe7cc556f58d92618e04ebbd16744be753eb4d06d569590df341c89e25f6ecc9c"
+    process.env.REACT_APP_RECLAIM_APP_ID,
+    process.env.REACT_APP_RECLAIM_APP_SECRET,
   );
   const generateProof = async () => {
     setIsFetching(true);
@@ -19,10 +19,26 @@ function App() {
     try {
       // replace with your url to fetch data from (in this case, we are fetching Crypto Global Market Data from coingecko)
       const url = "https://api.coingecko.com/api/v3/global";
-      const publicOptions = {
+      const data = await reclaim.zkFetch(url, {
+        // public options for the fetch request 
         method: "GET",
-      }
-      const data = await reclaim.zkFetch(url, publicOptions);
+      }, {
+         /* 
+            * The proof will match the response body with the regex pattern (search for the number of active cryptocurrencies in the response body)
+            the regex will capture the number in the named group 'active_cryptocurrencies'. 
+            */ 
+        responseMatches: [
+          {
+            type: "regex",
+            // the regex pattern to match the response body and capture the number of active cryptocurrencies 
+            value: 'active_cryptocurrencies":(?<active_cryptocurrencies>[\\d\\.]+)'
+          },
+        ],
+        responseRedactions: [{
+          regex: 'active_cryptocurrencies":(?<active_cryptocurrencies>[\\d\\.]+)'
+        }]
+       
+      });
       console.log(data);
       setProofData(data);
       setIsFetching(false);

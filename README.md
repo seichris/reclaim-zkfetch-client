@@ -1,11 +1,17 @@
 # zkFetch React Starter 
 
-This is a React starter for using zkFetch SDK
+This is an example project that demonstrates how to use zk-fetch on an React app.
+
+- Fetch active_cryptocurrencies from the CoinGecko API.
+- Generate a proof for the active_cryptocurrencies using zk-fetch.
+- Transform the proof data to be used on-chain
+
 
 ## Getting Started
 
 ```bash
 npm install
+npm run postinstall 
 npm run start
 ```
 
@@ -14,7 +20,13 @@ npm run start
 
 An application ID and secret from Reclaim Protocol. You can get one from the [devtool dashboard](https://dev.reclaimprotocol.org/).
 
-Although we have a test id and secret in the code, it is recommended to use your own key for production.
+## Environment Variables
+
+copy the .env.example file to .env and set the env variables
+
+```bash
+cp .env.example .env
+```
 
 
 ## More Information
