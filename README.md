@@ -1,6 +1,6 @@
-# zkFetch Extension
+# zkFetch - Chrome Extension
 
-This is an example project that demonstrates how to use zk-fetch on an Chrome Extension.
+This is an example project that demonstrates how to use zk-fetch as a Chrome Extension.
 
 - Fetch active_cryptocurrencies from the CoinGecko API.
 - Generate a proof for the active_cryptocurrencies using zk-fetch.
