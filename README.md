@@ -1,6 +1,6 @@
-# zkFetch React Starter 
+# zkFetch Extension
 
-This is an example project that demonstrates how to use zk-fetch on an React app.
+This is an example project that demonstrates how to use zk-fetch on an Chrome Extension.
 
 - Fetch active_cryptocurrencies from the CoinGecko API.
 - Generate a proof for the active_cryptocurrencies using zk-fetch.
@@ -11,8 +11,7 @@ This is an example project that demonstrates how to use zk-fetch on an React app
 
 ```bash
 npm install
-npm run postinstall 
-npm run start
+npm run build:extension
 ```
 
 

@@ -27,6 +27,7 @@ module.exports = function override(config) {
     tls: false,
     worker_threads: false,
     readline: false,
+    re2: false,
     child_process: false,
     constants: require.resolve("constants-browserify"),
     process: require.resolve("process/browser.js"),
@@ -68,6 +69,24 @@ module.exports = function override(config) {
     enforce: 'pre',
     use: ['source-map-loader'],
     exclude: /node_modules/,
+  });
+
+  // Add extension-specific configurations
+  config.output = {
+    ...config.output,
+    publicPath: '/',
+  };
+
+  // Enable WebAssembly
+  config.experiments = {
+    ...config.experiments,
+    asyncWebAssembly: true,
+  };
+
+  // Update module rules for WebAssembly
+  config.module.rules.push({
+    test: /\.wasm$/,
+    type: 'webassembly/async',
   });
 
   return config;
