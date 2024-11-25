@@ -27,6 +27,14 @@ function startRecording() {
         value: h.value
       })) : [];
 
+      // Check if we have a cookie header
+      const hasCookie = requestHeaders.some(h => h.name.toLowerCase() === 'cookie');
+      
+      // If no cookie header found, try to get it from document.cookie
+      if (!hasCookie) {
+        console.log('No cookie header found in request');
+      }
+
       networkRequests.push({
         url: details.url,
         timestamp: details.timeStamp,
@@ -77,7 +85,7 @@ function startRecording() {
     chrome.webRequest.onBeforeSendHeaders.addListener(
       beforeSendHeadersListener,
       { urls: ["<all_urls>"] },
-      ["requestHeaders"]
+      ["requestHeaders", "extraHeaders"]
     );
     console.log('Added beforeSendHeaders listener');
 
@@ -172,46 +180,109 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'OPEN_RECLAIM_PAGE') {
     console.log('Opening Reclaim page with request:', message.request);
     
-    // Open Reclaim page directly
     chrome.tabs.create({ 
       url: 'https://dev.reclaimprotocol.org/new-application' 
     }, (tab) => {
-      // Add listener for page load completion
       chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
         if (tabId === tab.id && info.status === 'complete') {
           chrome.tabs.onUpdated.removeListener(listener);
           
-          // Execute form filling script
           chrome.scripting.executeScript({
             target: { tabId: tab.id },
             function: (request) => {
+              console.log('Starting form fill with request:', request);
+
               const fillForm = async () => {
                 // Step 1: Click zkFetchApp button
                 const zkFetchBtn = Array.from(document.querySelectorAll('button'))
                   .find(button => button.textContent.includes('zkFetchApp'));
+                console.log('Found zkFetchApp button:', zkFetchBtn);
+                
                 if (zkFetchBtn) {
                   zkFetchBtn.click();
                   
-                  // Step 2: Wait and fill application name
                   setTimeout(() => {
+                    // Step 2: Fill application name
                     const appNameInput = document.querySelector('input[placeholder="Application Name"]');
+                    console.log('Found app name input:', appNameInput);
+                    
                     if (appNameInput) {
                       appNameInput.value = "Network Request Proof";
                       appNameInput.dispatchEvent(new Event('input', { bubbles: true }));
                       
                       // Step 3: Click Next button
                       const nextBtn = document.querySelector('button.stepper-next-button');
+                      console.log('Found next button:', nextBtn);
+                      
                       if (nextBtn) {
                         nextBtn.click();
                         
-                        // Step 4: Wait and fill URL and other details
-                        setTimeout(() => {
+                        setTimeout(async () => {
+                          // Step 4: Fill URL
                           const urlInput = document.querySelector('input[placeholder="https://api.reclaimprotocol/my-endpoint"]');
+                          console.log('Found URL input:', urlInput);
+                          
                           if (urlInput) {
                             urlInput.value = request.url;
                             urlInput.dispatchEvent(new Event('input', { bubbles: true }));
                             
-                            // TODO: Add additional form filling for headers, response matches, etc.
+                            // Debug: Log all headers
+                            console.log('All request headers:', request.headers);
+                            
+                            // Step 5: Add header input pairs
+                            const addHeaderBtn = Array.from(document.querySelectorAll('button'))
+                              .find(button => button.getAttribute('aria-label') === 'Add header');
+                            console.log('Found add header button:', addHeaderBtn);
+
+                            // First, remove the default header row
+                            const deleteButtons = document.querySelectorAll('button[aria-label="Delete header"]');
+                            if (deleteButtons.length > 0) {
+                              console.log('Removing default header row');
+                              deleteButtons[0].click();
+                              // Wait a bit for the deletion to complete
+                              await new Promise(resolve => setTimeout(resolve, 200));
+                            }
+
+                            // Add pairs for each header
+                            console.log('Adding header pairs for', request.headers.length, 'headers');
+                            for(let i = 0; i < request.headers.length; i++) {
+                              console.log('Adding header pair', i + 1);
+                              addHeaderBtn.click();
+                              // Wait between adding pairs
+                              await new Promise(resolve => setTimeout(resolve, 200));
+                            }
+
+                            // Wait for all inputs to be created
+                            await new Promise(resolve => setTimeout(resolve, 500));
+
+                            // Now fill all the pairs
+                            const allKeyInputs = document.querySelectorAll('input[placeholder="Header key"]');
+                            const allValueInputs = document.querySelectorAll('input[placeholder="Header value"]');
+                            const allSwitches = document.querySelectorAll('.chakra-switch__input');
+                            
+                            console.log('Found input pairs:', allKeyInputs.length);
+                            console.log('Found switches:', allSwitches.length);
+                            
+                            request.headers.forEach((header, index) => {
+                              console.log(`Filling header pair ${index}:`, header);
+                              
+                              if (allKeyInputs[index] && allValueInputs[index]) {
+                                // Fill key and value
+                                allKeyInputs[index].value = header.name;
+                                allKeyInputs[index].dispatchEvent(new Event('input', { bubbles: true }));
+                                
+                                allValueInputs[index].value = header.value;
+                                allValueInputs[index].dispatchEvent(new Event('input', { bubbles: true }));
+                                
+                                // Toggle the switch
+                                if (allSwitches[index]) {
+                                  console.log(`Clicking switch ${index}`);
+                                  allSwitches[index].click();
+                                  // Also dispatch change event to ensure the UI updates
+                                  allSwitches[index].dispatchEvent(new Event('change', { bubbles: true }));
+                                }
+                              }
+                            });
                           }
                         }, 1000);
                       }
