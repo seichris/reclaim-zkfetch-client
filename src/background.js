@@ -22,17 +22,37 @@ function startRecording() {
   beforeSendHeadersListener = (details) => {
     console.log('Captured request:', details.url);
     try {
-      const requestHeaders = details.requestHeaders ? details.requestHeaders.map(h => ({
-        name: h.name,
-        value: h.value
-      })) : [];
+      const requestHeaders = details.requestHeaders ? details.requestHeaders.map(h => {
+        // Special handling for cookies
+        if (h.name.toLowerCase() === 'cookie') {
+          // Split cookies into individual values
+          const cookieValues = h.value.split('; ').map(cookie => {
+            const [name, value] = cookie.split('=');
+            return { name, value };
+          });
+          
+          return {
+            name: h.name,
+            value: h.value,
+            cookies: cookieValues // Add parsed cookies array
+          };
+        }
+        
+        return {
+          name: h.name,
+          value: h.value
+        };
+      }) : [];
 
       // Check if we have a cookie header
       const hasCookie = requestHeaders.some(h => h.name.toLowerCase() === 'cookie');
       
-      // If no cookie header found, try to get it from document.cookie
       if (!hasCookie) {
         console.log('No cookie header found in request');
+      } else {
+        // Log parsed cookies for debugging
+        const cookieHeader = requestHeaders.find(h => h.name.toLowerCase() === 'cookie');
+        console.log('Parsed cookies:', cookieHeader.cookies);
       }
 
       networkRequests.push({

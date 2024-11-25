@@ -44,7 +44,20 @@ const createFloatingButton = () => {
           request: {
             url: response.matchingRequest.url,
             method: response.matchingRequest.method || 'GET',
-            headers: response.matchingRequest.requestHeaders,
+            headers: response.matchingRequest.requestHeaders.flatMap(header => {
+              // Special handling for cookies
+              if (header.name.toLowerCase() === 'cookie' && header.cookies) {
+                // Create separate header entries for each cookie
+                return header.cookies.map(cookie => ({
+                  name: cookie.name,
+                  value: cookie.value
+                }));
+              }
+              return [{
+                name: header.name,
+                value: header.value
+              }];
+            }),
             responseMatches: [{
               type: 'regex',
               value: selectedText
