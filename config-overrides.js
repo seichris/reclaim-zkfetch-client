@@ -89,5 +89,36 @@ module.exports = function override(config) {
     type: 'webassembly/async',
   });
 
+  // Add multiple entry points
+  config.entry = {
+    main: config.entry,
+    contentScript: './src/contentScript.js',
+    background: './src/background.js'
+  };
+
+  // Configure output for ES modules
+  config.output = {
+    ...config.output,
+    filename: (pathData) => {
+      // Both scripts should be treated as modules
+      if (pathData.chunk.name === 'background' || pathData.chunk.name === 'contentScript') {
+        return `${pathData.chunk.name}.js`;
+      }
+      return 'static/js/[name].[contenthash:8].js';
+    },
+    chunkFormat: 'module',
+    library: {
+      type: 'module'
+    }
+  };
+
+  // Enable module experiments for all scripts
+  config.experiments = {
+    ...config.experiments,
+    asyncWebAssembly: true,
+    outputModule: true,
+    topLevelAwait: true
+  };
+
   return config;
 };

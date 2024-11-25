@@ -1,6 +1,6 @@
 import { ReclaimClient } from "@reclaimprotocol/zk-fetch";
 import "./App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { JsonEditor } from "json-edit-react";
 import { Toaster, toast } from "react-hot-toast";
 
@@ -14,6 +14,41 @@ const reclaim = new ReclaimClient(
 function App() {
   const [proofData, setProofData] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
+
+  useEffect(() => {
+    // Check if we're opened for a Reclaim request
+    if (window.location.hash === '#reclaim') {
+      chrome.storage.local.get(['pendingReclaimRequest'], (result) => {
+        if (result.pendingReclaimRequest) {
+          console.log('Found pending Reclaim request:', result.pendingReclaimRequest);
+          const request = result.pendingReclaimRequest;
+          
+          // Clear the stored request
+          chrome.storage.local.remove(['pendingReclaimRequest']);
+          
+          // Generate the proof
+          reclaim.zkFetch(
+            request.url,
+            {
+              method: request.method,
+              headers: request.headers
+            },
+            {
+              responseMatches: request.responseMatches,
+              responseRedactions: request.responseRedactions
+            }
+          ).then(data => {
+            console.log('Proof generated:', data);
+            setProofData(data);
+            toast.success('Proof generated successfully!');
+          }).catch(error => {
+            console.error('Error generating proof:', error);
+            toast.error('Failed to generate proof: ' + error.message);
+          });
+        }
+      });
+    }
+  }, []); // Run once on mount
 
   const generateProof = async () => {
     setIsFetching(true);
@@ -50,6 +85,79 @@ function App() {
       console.error(error);
     }
   };
+
+  const startNetworkCapture = async () => {
+    try {
+      console.log('Starting network capture...');
+      // Check if we're in a Chrome extension context
+      if (!chrome?.runtime?.sendMessage) {
+        console.error('Not in Chrome extension context');
+        toast.error('This feature is only available in the Chrome extension');
+        return;
+      }
+
+      // Start recording network requests in background
+      chrome.runtime.sendMessage({ type: 'START_RECORDING' }, async (response) => {
+        console.log('Got response from background:', response);
+        if (chrome.runtime.lastError) {
+          console.error('Error:', chrome.runtime.lastError);
+          toast.error('Failed to start recording');
+          return;
+        }
+        
+        if (response?.success) {
+          // Also send message to content script in current tab
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          if (tab?.id) {
+            chrome.tabs.sendMessage(tab.id, { type: 'START_RECORDING' }, (response) => {
+              if (chrome.runtime.lastError) {
+                console.error('Error sending to content script:', chrome.runtime.lastError);
+                return;
+              }
+              console.log('Content script response:', response);
+            });
+          }
+          
+          console.log('Successfully started recording');
+          toast.success('Started capturing network requests. Please highlight text on the page to search.');
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error starting capture:', error);
+      toast.error('Failed to start network capture: ' + error.message);
+    }
+  };
+
+  // Add this to your existing message handlers in App.js
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'OPEN_RECLAIM_PAGE') {
+      console.log('Opening Reclaim page with request:', message.request);
+      
+      // Use the reclaim client to generate proof
+      reclaim.zkFetch(
+        message.request.url,
+        {
+          method: message.request.method,
+          headers: message.request.headers
+        },
+        {
+          responseMatches: message.request.responseMatches,
+          responseRedactions: message.request.responseRedactions
+        }
+      ).then(data => {
+        console.log('Proof generated:', data);
+        setProofData(data);
+        toast.success('Proof generated successfully!');
+      }).catch(error => {
+        console.error('Error generating proof:', error);
+        toast.error('Failed to generate proof: ' + error.message);
+      });
+
+      sendResponse({ success: true });
+      return true;
+    }
+  });
 
   return (
     <>
@@ -96,6 +204,13 @@ function App() {
             ) : (
               "Generate Proof"
             )}
+          </button>
+          
+          <button
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+            onClick={startNetworkCapture}
+          >
+            Capture Network Request
           </button>
           
           {proofData && !isFetching && (
